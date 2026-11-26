@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🇯🇵 日本旅行簽賬防伏計算機｜香港信用卡實袋計算器</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans TC & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            washi: '#FAF9F6',
+            indigoInk: '#1E293B',
+            vermilion: '#E11D48',
+            emeraldGain: '#059669',
+          },
+          fontFamily: {
+            sans: ['"Inter"', '"Noto Sans TC"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* 保持數字對齊，避免輸入時跳動 */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    /* 移除數字輸入框預設上下箭頭 */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+<body class="bg-washi text-indigoInk font-sans antialiased selection:bg-rose-100 selection:text-vermilion min-h-screen">
+
+  <!-- 主容器：手機優先設計 (最大寬度 680px) -->
+  <div class="max-w-[680px] mx-auto px-4 pt-6 pb-12 sm:px-6">
+
+    <!-- 1. 頁首區 (Header) -->
+    <header class="text-center mb-6">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200/80 shadow-xs text-xs font-medium text-slate-600 mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-emeraldGain"></span>
+        零廣告 · 無需註冊
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-indigoInk mb-2">
+        🇯🇵 日本旅行簽賬防伏計算機
+      </h1>
+      <p class="text-sm sm:text-base text-slate-500 leading-relaxed max-w-md mx-auto">
+        自動扣除 1.95% 外幣手續費＋回贈上限，3 秒算出實袋最多邊張卡
+      </p>
+    </header>
+
+    <!-- 2. 輸入控制面板 (Input Panel) -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6 mb-5">
+      
+      <!-- 消費金額與幣別切換 -->
+      <div class="flex items-center justify-between mb-2.5">
+        <label for="spendInput" class="text-sm font-semibold text-indigoInk">
+          預計日本總消費
+        </label>
+        <!-- HKD / JPY 切換 -->
+        <div class="inline-flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+          <button
+            type="button"
+            id="btnCurrencyHKD"
+            onclick="setCurrency('HKD')"
+            class="px-3 py-1.5 rounded-lg transition-all cursor-pointer bg-white text-indigoInk shadow-xs"
+          >
+            HKD 港幣
+          </button>
+          <button
+            type="button"
+            id="btnCurrencyJPY"
+            onclick="setCurrency('JPY')"
+            class="px-3 py-1.5 rounded-lg transition-all cursor-pointer text-slate-500 hover:text-indigoInk"
+          >
+            JPY 日圓
+          </button>
+        </div>
+      </div>
+
+      <!-- 金額輸入框 -->
+      <div class="relative mb-3">
+        <span id="currencyPrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400 select-none">
+          HK$
+        </span>
+        <input
+          type="number"
+          id="spendInput"
+          inputmode="decimal"
+          min="0"
+          step="100"
+          value="12000"
+          placeholder="輸入金額"
+          class="w-full pl-14 pr-4 py-3.5 text-2xl font-bold tabular-nums text-indigoInk bg-slate-50/70 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigoInk/15 focus:border-indigoInk transition-all"
+        />
+      </div>
+
+      <!-- 即時換算與可編輯匯率膠囊 -->
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4 text-xs">
+        <div class="text-slate-500 font-medium tabular-nums">
+          折合約：<span id="convertedDisplay" class="font-semibold text-indigoInk">¥240,000</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 bg-slate-100/90 border border-slate-200/70 px-2.5 py-1 rounded-full text-slate-600">
+          <span>匯率 100 JPY =</span>
+          <input
+            type="number"
+            id="rateInput"
+            inputmode="decimal"
+            step="0.05"
+            min="1"
+            max="20"
+            value="5.00"
+            aria-label="每100日圓兌港幣匯率"
+            class="w-12 text-center font-semibold tabular-nums text-indigoInk bg-white border border-slate-200 rounded-md py-0.5 focus:outline-none focus:border-indigoInk"
+          />
+          <span>HKD</span>
+        </div>
+      </div>
+
+      <!-- 快速金額預設按鈕 -->
+      <div class="grid grid-cols-4 gap-2 mb-5">
+        <button type="button" onclick="applyPresetHKD(5000)" class="preset-btn py-2 px-1 text-xs sm:text-sm font-medium rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigoInk hover:text-indigoInk active:scale-95 transition-all cursor-pointer tabular-nums">
+          $5,000
+        </button>
+        <button type="button" onclick="applyPresetHKD(10000)" class="preset-btn py-2 px-1 text-xs sm:text-sm font-medium rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigoInk hover:text-indigoInk active:scale-95 transition-all cursor-pointer tabular-nums">
+          $10,000
+        </button>
+        <button type="button" onclick="applyPresetHKD(20000)" class="preset-btn py-2 px-1 text-xs sm:text-sm font-medium rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigoInk hover:text-indigoInk active:scale-95 transition-all cursor-pointer tabular-nums">
+          $20,000
+        </button>
+        <button type="button" onclick="applyPresetHKD(40000)" class="preset-btn py-2 px-1 text-xs sm:text-sm font-medium rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-indigoInk hover:text-indigoInk active:scale-95 transition-all cursor-pointer tabular-nums">
+          $40,000
+        </button>
+      </div>
+
+      <!-- 回贈偏好分段切換 (Cashback vs Miles) -->
+      <div class="pt-4 border-t border-slate-100">
+        <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl">
+          <button
+            type="button"
+            id="btnModeCashback"
+            onclick="setRewardMode('cashback')"
+            class="py-2.5 px-3 rounded-lg text-sm font-semibold transition-all cursor-pointer bg-white text-indigoInk shadow-xs"
+          >
+            💰 賺現金回贈
+          </button>
+          <button
+            type="button"
+            id="btnModeMiles"
+            onclick="setRewardMode('miles')"
+            class="py-2.5 px-3 rounded-lg text-sm font-semibold transition-all cursor-pointer text-slate-500 hover:text-indigoInk"
+          >
+            ✈️ 儲里數 (Asia Miles)
+          </button>
+        </div>
+        <!-- 里數估值提示（僅於里數模式顯示） -->
+        <p id="milesValuationNote" class="hidden mt-2.5 text-xs text-slate-500 text-center">
+          * 排序按 <span class="font-semibold text-indigoInk">1 里 ≈ HK$0.10</span> 扣除 1.95% 外幣手續費後之淨價值計算
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. 聰明拆卡攻略提示 (當現金回贈模式且消費 > HK$10,000 時動態顯示) -->
+    <div id="splitCardBanner" class="hidden mb-5 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl p-4 shadow-xs">
+      <div class="flex items-start gap-3">
+        <div class="text-xl leading-none mt-0.5">💡</div>
+        <div class="flex-1 text-sm">
+          <div class="font-bold text-emerald-900 mb-1">
+            進階拆卡攻略：比單碌一張卡多賺 <span id="splitExtraAmount" class="text-emeraldGain underline decoration-emerald-300 decoration-2 underline-offset-2 tabular-nums">+$0</span>！
+          </div>
+          <p id="splitCardText" class="text-emerald-800/90 text-xs sm:text-sm leading-relaxed">
+            <!-- JS 動態填入 -->
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 結果列表標題與複製按鈕 -->
+    <div class="flex items-center justify-between gap-2 mb-3 px-1">
+      <h2 class="text-sm font-bold text-slate-600 uppercase tracking-wider">
+        實袋排行榜 <span id="resultCountBadge" class="font-normal text-slate-400"></span>
+      </h2>
+      <button
+        type="button"
+        onclick="copyThreadsSummary()"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-indigoInk hover:bg-slate-50 active:scale-95 transition-all shadow-xs cursor-pointer"
+      >
+        📋 複製結果去 Threads 討論
+      </button>
+    </div>
+
+    <!-- 5. 動態信用卡結果列表 -->
+    <main id="resultsContainer" class="space-y-3.5 mb-7">
+      <!-- 由 JavaScript 動態渲染 -->
+    </main>
+
+    <!-- 6. 底部旅遊保聯盟行銷橫幅 -->
+    <section class="mb-7">
+      <button
+        type="button"
+        onclick="openAffiliateModal('日本自駕遊旅遊保 3 秒比價', '針對日本自駕必備的「租車墊底費 (Excess)」保障，一鍵對比熱門旅遊保險條款與即時折扣碼。')"
+        class="w-full text-left bg-white hover:bg-slate-50/80 border border-slate-200/90 rounded-2xl p-4 shadow-xs transition-all group cursor-pointer flex items-center justify-between gap-3"
+      >
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-xl bg-rose-50 text-xl flex items-center justify-center shrink-0">
+            🚗
+          </span>
+          <div>
+            <div class="text-sm font-bold text-indigoInk group-hover:text-vermilion transition-colors">
+              準備日本自駕遊？3 秒對比包「租車墊底費」的旅遊保
+            </div>
+            <div class="text-xs text-slate-500 mt-0.5">
+              避免意外自付高達 15 萬日圓墊底費 · 即享網購保費折扣
+            </div>
+          </div>
+        </div>
+        <span class="text-slate-400 group-hover:text-vermilion group-hover:translate-x-0.5 transition-all text-lg font-bold shrink-0">
+          →
+        </span>
+      </button>
+    </section>
+
+    <!-- 7. 免責聲明頁尾 (Footer) -->
+    <footer class="text-center text-xs text-slate-400 leading-relaxed px-2 border-t border-slate-200/70 pt-5">
+      <p>
+        * 本工具為示範原型，信用卡回贈比率、上限及外幣手續費僅供參考，申請前請以銀行最新條款為準。經本站連結申請產品，本站或會獲得微薄佣金以維持免費運作 🙏
+      </p>
+    </footer>
+  </div>
+
+  <!-- 聯盟行銷連結示範彈窗 (Modal) -->
+  <div
+    id="affiliateModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+    onclick="handleModalBackdropClick(event)"
+  >
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 transform transition-all">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-vermilion">
+          💡 變現連結示範位
+        </span>
+        <button
+          type="button"
+          onclick="closeAffiliateModal()"
+          class="text-slate-400 hover:text-indigoInk p-1 rounded-lg cursor-pointer"
+          aria-label="關閉視窗"
+        >
+          ✕
+        </button>
+      </div>
+      <h3 id="modalTitle" class="text-lg font-bold text-indigoInk mb-2">
+        查看最新迎新優惠
+      </h3>
+      <p id="modalDesc" class="text-sm text-slate-600 leading-relaxed mb-4">
+        <!-- 動態內容 -->
+      </p>
+      <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 mb-5 text-xs text-slate-600 leading-relaxed">
+        <span class="font-bold text-indigoInk block mb-1">🛠️ 給站長（實驗者）的提示：</span>
+        聯盟行銷連結示範位：正式上線時只需在程式碼中把連結換成你的專屬推廣連結（如 Involve Asia、Partnerize 或銀行親友推薦 MGM 連結）即可賺取佣金。
+      </div>
+      <div class="flex gap-2.5">
+        <button
+          type="button"
+          onclick="closeAffiliateModal()"
+          class="flex-1 py-2.5 px-4 rounded-xl bg-indigoInk text-white text-sm font-semibold hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
+        >
+          明白，返回計算機
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 複製成功提示 Toast -->
+  <div
+    id="toast"
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-indigoInk text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2 whitespace-nowrap"
+  >
+    <span>✅</span>
+    <span id="toastMessage">已複製結果！快去 Threads 貼上討論吧</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. 狀態管理與常量設定 (State & Constants)
+    // =========================================================================
+    const MILES_VALUATION_HKD = 0.10; // 1 Asia Mile 估值 HK$0.10
+
+    const state = {
+      currency: 'HKD',       // 'HKD' 或 'JPY'
+      amount: 12000,         // 當前輸入框數值
+      ratePer100JPY: 5.00,   // 每 100 日圓兌港幣
+      mode: 'cashback',      // 'cashback' 或 'miles'
+      latestResults: [],     // 保存最新排序結果供複製分享使用
+      latestSplitTip: null   // 保存拆卡攻略供複製分享使用
+    };
+
+    // =========================================================================
+    // 2. 香港熱門日本旅遊信用卡資料庫 (Credit Card Engine Data)
+    //    正式上線時，只需將每個物件的 affiliateUrl 換成你的專屬推廣連結
+    // =========================================================================
+    const CREDIT_CARDS = [
+      {
+        id: 'hangseng_travel_plus',
+        name: '恒生 Travel+ Visa Signature',
+        bank: '恒生銀行',
+        tag: '日本 7% 神卡',
+        fxFeeRate: 0.0195,
+        modes: ['cashback'],
+        cashback: {
+          highRate: 0.07,
+          capHKD: 7500,
+          baseRate: 0.004,
+          note: '日本外幣簽賬 7% +FUN Dollars（每月上限簽賬 HK$7,500，其後 0.4%）'
+        },
+        promoDesc: '日本、韓國、泰國等地外幣簽賬高達 7% 回贈，記得留意每月 HK$7,500 簽賬上限，適合中小額消費或作主力第一張卡！',
+        affiliateUrl: '#affiliate-hangseng-travel-plus'
+      },
+      {
+        id: 'earnmore_unionpay',
+        name: '安信 EarnMORE 銀聯鑽石卡',
+        bank: '安信信貸',
+        tag: '免手續費神卡',
+        fxFeeRate: 0.0,
+        isZeroFx: true,
+        modes: ['cashback'],
+        cashback: {
+          highRate: 0.02,
+          capHKD: 150000,
+          baseRate: 0.01,
+          note: '銀聯免 1.95% 外幣手續費，全年 HK$150,000 內享劃一 2% 現金回贈'
+        },
+        promoDesc: '去日本大額買名牌、電器必備！全免 1.95% 外幣手續費，實袋 2% 無伏位，最啱做大額簽賬或爆 Cap 後的後備卡。',
+        affiliateUrl: '#affiliate-earnmore-unionpay'
+      },
+      {
+        id: 'hsbc_vs',
+        name: '滙豐 Visa Signature (賞世界)',
+        bank: 'HSBC 滙豐',
+        tag: '高上限全能卡',
+        fxFeeRate: 0.0195,
+        modes: ['cashback', 'miles'],
+        cashback: {
+          highRate: 0.036,
+          capHKD: 100000,
+          baseRate: 0.004,
+          note: '最紅自主獎賞「賞世界」全中享 3.6%「獎賞錢」（每年上限 HK$100,000）'
+        },
+        miles: {
+          highHKDPerMile: 2.78,
+          capHKD: 100000,
+          baseHKDPerMile: 25.0,
+          note: '「獎賞錢」1:10 換 Asia Miles，海外簽賬低至 HK$2.78/里（每年上限 HK$100,000）'
+        },
+        promoDesc: '現金回贈與儲里數兩棲神卡！上限高達每年 HK$100,000，去日本血拼唔怕輕易爆 Cap。',
+        affiliateUrl: '#affiliate-hsbc-vs'
+      },
+      {
+        id: 'aeon_wakuwaku',
+        name: 'AEON Card WAKUWAKU',
+        bank: 'AEON',
+        tag: '日本簽賬 3%',
+        fxFeeRate: 0.0195,
+        modes: ['cashback'],
+        cashback: {
+          highRate: 0.03,
+          capHKD: 10000,
+          baseRate: 0.005,
+          note: '日本實體簽賬 3% 現金回贈（每月上限簽賬 HK$10,000，其後 0.5%）'
+        },
+        promoDesc: '免年費門檻低，日本實體店簽賬有 3% 回贈，惟需注意扣除 1.95% 手續費及每月 HK$10,000 上限。',
+        affiliateUrl: '#affiliate-aeon-wakuwaku'
+      },
+      {
+        id: 'hsbc_everymile',
+        name: '滙豐 EveryMile 信用卡',
+        bank: 'HSBC 滙豐',
+        tag: '外幣 $2/里',
+        fxFeeRate: 0.0195,
+        modes: ['miles', 'cashback'],
+        cashback: {
+          highRate: 0.025,
+          capHKD: 15000,
+          baseRate: 0.01,
+          note: '推廣期內海外簽賬相當於 2.5% 回贈（上限 HK$15,000，其後 1%）'
+        },
+        miles: {
+          highHKDPerMile: 2.0,
+          capHKD: 15000,
+          baseHKDPerMile: 5.0,
+          note: '海外簽賬推廣低至 HK$2/里（上限 HK$15,000，其後 HK$5/里）'
+        },
+        promoDesc: '主打旅遊與儲里數，合資格海外簽賬低至 $2/里，仲送免費機場貴賓室同免費旅遊保，飛日本必備！',
+        affiliateUrl: '#affiliate-hsbc-everymile'
+      },
+      {
+        id: 'sc_cathay',
+        name: '渣打國泰 Mastercard',
+        bank: '渣打銀行',
+        tag: '無上限 $4/里',
+        fxFeeRate: 0.0195,
+        modes: ['miles'],
+        miles: {
+          highHKDPerMile: 4.0,
+          capHKD: Infinity,
+          baseHKDPerMile: 4.0,
+          note: '海外簽賬 HK$4/里，無簽賬上限，每月自動免費存入國泰會員賬戶'
+        },
+        promoDesc: '儲 Asia Miles 最省心之選！海外簽賬劃一 $4/里無上限，唔使計爆 Cap，里數自動入賬免兌換手續費。',
+        affiliateUrl: '#affiliate-sc-cathay'
+      },
+      {
+        id: 'dbs_black',
+        name: 'DBS Black World Mastercard',
+        bank: '星展銀行',
+        tag: '無上限 $4/里',
+        fxFeeRate: 0.0195,
+        modes: ['miles'],
+        miles: {
+          highHKDPerMile: 4.0,
+          capHKD: Infinity,
+          baseHKDPerMile: 4.0,
+          note: '海外簽賬 HK$4/里，積分無限期且無簽賬上限'
+        },
+        promoDesc: '老牌儲里數神卡，海外簽賬 HK$4/里兼無上限，DBS$ 積分永久唔過期，可隨時換 Asia Miles 或 Avios。',
+        affiliateUrl: '#affiliate-dbs-black'
+      }
+    ];
+
+    // =========================================================================
+    // 3. 格式化工具函式 (Formatting Helpers)
+    // =========================================================================
+    function formatHKD(num, showSign = false) {
+      const absVal = Math.abs(num);
+      const formatted = absVal.toLocaleString('en-US', {
+        minimumFractionDigits: absVal < 100 && absVal % 1 !== 0 ? 1 : 0,
+        maximumFractionDigits: 1
+      });
+      if (showSign) {
+        if (num > 0.01) return `+$${formatted}`;
+        if (num < -0.01) return `-$${formatted}`;
+        return `$0`;
+      }
+      return `$${formatted}`;
+    }
+
+    function formatInteger(num) {
+      return Math.round(num).toLocaleString('en-US');
+    }
+
+    // 取得等值港幣金額
+    function getSpendInHKD() {
+      const amt = parseFloat(state.amount);
+      if (isNaN(amt) || amt <= 0) return 0;
+      const rate = parseFloat(state.ratePer100JPY) || 5.0;
+      return state.currency === 'HKD' ? amt : (amt / 100) * rate;
+    }
+
+    // =========================================================================
+    // 4. 計算引擎 (Calculation Engine)
+    // =========================================================================
+    function calculateCardCashback(card, spendHKD) {
+      const cb = card.cashback;
+      const cappedSpend = Math.min(spendHKD, cb.capHKD);
+      const excessSpend = Math.max(0, spendHKD - cb.capHKD);
+
+      const grossReward = (cappedSpend * cb.highRate) + (excessSpend * cb.baseRate);
+      const fxFee = spendHKD * card.fxFeeRate;
+      const netGain = grossReward - fxFee;
+      const effectiveRate = spendHKD > 0 ? (netGain / spendHKD) * 100 : 0;
+
+      return {
+        card,
+        spendHKD,
+        grossReward,
+        fxFee,
+        netGain,
+        effectiveRate,
+        isOverCap: excessSpend > 0,
+        excessSpend,
+        capHKD: cb.capHKD,
+        baseRatePercent: (cb.baseRate * 100).toFixed(1).replace(/\.0$/, '')
+      };
+    }
+
+    function calculateCardMiles(card, spendHKD) {
+      const ml = card.miles;
+      const cappedSpend = Math.min(spendHKD, ml.capHKD);
+      const excessSpend = Math.max(0, spendHKD - ml.capHKD);
+
+      const milesEarned = (cappedSpend / ml.highHKDPerMile) + (excessSpend / ml.baseHKDPerMile);
+      const fxFee = spendHKD * card.fxFeeRate;
+      const costPerMile = milesEarned > 0 ? fxFee / milesEarned : 0;
+      const milesValueHKD = milesEarned * MILES_VALUATION_HKD;
+      const netValueHKD = milesValueHKD - fxFee;
+
+      return {
+        card,
+        spendHKD,
+        milesEarned,
+        fxFee,
+        costPerMile,
+        milesValueHKD,
+        netValueHKD,
+        isOverCap: excessSpend > 0,
+        excessSpend,
+        capHKD: ml.capHKD,
+        baseHKDPerMile: ml.baseHKDPerMile
+      };
+    }
+
+    // =========================================================================
+    // 5. 畫面渲染 (UI Rendering)
+    // =========================================================================
+    function updateConversionDisplay() {
+      const amt = parseFloat(state.amount) || 0;
+      const rate = parseFloat(state.ratePer100JPY) || 5.0;
+      const displayEl = document.getElementById('convertedDisplay');
+
+      if (state.currency === 'HKD') {
+        const jpy = rate > 0 ? (amt / rate) * 100 : 0;
+        displayEl.textContent = `¥${formatInteger(jpy)}`;
+      } else {
+        const hkd = (amt / 100) * rate;
+        displayEl.textContent = `HK$${formatInteger(hkd)}`;
+      }
+    }
+
+    function renderAll() {
+      try {
+        updateConversionDisplay();
+        const spendHKD = getSpendInHKD();
+        const container = document.getElementById('resultsContainer');
+        const splitBanner = document.getElementById('splitCardBanner');
+        const countBadge = document.getElementById('resultCountBadge');
+
+        // 零金額或無效輸入狀態
+        if (spendHKD <= 0) {
+          splitBanner.classList.add('hidden');
+          countBadge.textContent = '';
+          container.innerHTML = `
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-8 text-center text-slate-400">
+              <div class="text-3xl mb-2">💴</div>
+              <p class="text-sm font-medium text-slate-500">請輸入預計日本消費金額，即時為你排好最抵神卡</p>
+            </div>
+          `;
+          state.latestResults = [];
+          state.latestSplitTip = null;
+          return;
+        }
+
+        // 篩選及計算對應模式的信用卡
+        const eligibleCards = CREDIT_CARDS.filter(c => c.modes.includes(state.mode));
+        countBadge.textContent = `（已對比 ${eligibleCards.length} 張熱門卡）`;
+
+        if (state.mode === 'cashback') {
+          const results = eligibleCards
+            .map(card => calculateCardCashback(card, spendHKD))
+            .sort((a, b) => b.netGain - a.netGain);
+
+          state.latestResults = results;
+          renderCashbackResults(results, container);
+          renderSplitCardTip(spendHKD, results, splitBanner);
+        } else {
+          const results = eligibleCards
+            .map(card => calculateCardMiles(card, spendHKD))
+            .sort((a, b) => b.netValueHKD - a.netValueHKD);
+
+          state.latestResults = results;
+          state.latestSplitTip = null;
+          splitBanner.classList.add('hidden');
+          renderMilesResults(results, container);
+        }
+      } catch (err) {
+        console.error('渲染計算結果時發生錯誤:', err);
+      }
+    }
+
+    // 渲染聰明拆卡攻略
+    function renderSplitCardTip(spendHKD, sortedResults, bannerEl) {
+      if (spendHKD <= 10000 || sortedResults.length === 0) {
+        bannerEl.classList.add('hidden');
+        state.latestSplitTip = null;
+        return;
+      }
+
+      const travelPlus = CREDIT_CARDS.find(c => c.id === 'hangseng_travel_plus');
+      const earnMore = CREDIT_CARDS.find(c => c.id === 'earnmore_unionpay');
+      if (!travelPlus || !earnMore) return;
+
+      const capPart = travelPlus.cashback.capHKD; // HK$7,500
+      const restPart = spendHKD - capPart;
+
+      const part1Net = calculateCardCashback(travelPlus, capPart).netGain;
+      const part2Net = calculateCardCashback(earnMore, restPart).netGain;
+      const totalSplitNet = part1Net + part2Net;
+
+      const bestSingleNet = sortedResults[0].netGain;
+      const extraGain = totalSplitNet - bestSingleNet;
+
+      if (extraGain > 10) {
+        document.getElementById('splitExtraAmount').textContent = formatHKD(extraGain, true);
+        document.getElementById('splitCardText').innerHTML = `
+          先用 <strong>${travelPlus.name}</strong> 簽足上限 <strong>HK$${formatInteger(capPart)}</strong>（實袋 ${formatHKD(part1Net, true)}），
+          餘額 <strong>HK$${formatInteger(restPart)}</strong> 轉用免手續費的 <strong>${earnMore.name}</strong>（實袋 ${formatHKD(part2Net, true)}），
+          總淨賺可推高至 <strong class="text-emeraldGain">${formatHKD(totalSplitNet, true)}</strong>！
+        `;
+        bannerEl.classList.remove('hidden');
+        state.latestSplitTip = {
+          totalSplitNet,
+          extraGain,
+          capPart,
+          restPart
+        };
+      } else {
+        bannerEl.classList.add('hidden');
+        state.latestSplitTip = null;
+      }
+    }
+
+    // 取得排名徽章 HTML
+    function getRankBadgeHTML(index) {
+      if (index === 0) {
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200/80">🏆 #1 實袋冠軍</span>`;
+      }
+      if (index === 1) {
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">🥈 #2 穩陣之選</span>`;
+      }
+      if (index === 2) {
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200/70">🥉 #3</span>`;
+      }
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-50 text-slate-500 border border-slate-200/70">#${index + 1}</span>`;
+    }
+
+    // 渲染現金回贈卡片
+    function renderCashbackResults(results, container) {
+      container.innerHTML = results.map((res, idx) => {
+        const isTop = idx === 0;
+        const isNegative = res.netGain < 0;
+        const netColorClass = isNegative ? 'text-vermilion' : 'text-emeraldGain';
+        const borderClass = isTop
+          ? 'border-indigoInk/25 ring-1 ring-indigoInk/10 shadow-md'
+          : 'border-slate-200/80 shadow-xs';
+
+        // 防伏提示或免手續費亮點
+        let alertBox = '';
+        if (res.isOverCap) {
+          alertBox = `
+            <div class="mt-3 flex items-start gap-2 bg-rose-50 border border-rose-200/80 text-vermilion rounded-xl px-3 py-2 text-xs leading-relaxed">
+              <span class="shrink-0 mt-0.5">⚠️</span>
+              <span><strong>已爆回贈上限！</strong>超出 HK$${formatInteger(res.excessSpend)} 的簽賬只計 ${res.baseRatePercent}%，已拉低整體回贈率${isNegative ? '（扣除 1.95% 手續費後倒蝕！）' : ''}</span>
+            </div>
+          `;
+        } else if (res.card.isZeroFx) {
+          alertBox = `
+            <div class="mt-3 flex items-center gap-2 bg-emerald-50/80 border border-emerald-200/70 text-emeraldGain rounded-xl px-3 py-2 text-xs font-medium">
+              <span>✨</span>
+              <span>免 1.95% 外幣手續費（銀聯結算），每一蚊都實袋！</span>
+            </div>
+          `;
+        }
+
+        return `
+          <article class="bg-white rounded-2xl border ${borderClass} p-4 sm:p-5 transition-all">
+            <!-- 頂部：排名與卡名 -->
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-1.5">
+                  ${getRankBadgeHTML(idx)}
+                  <span class="text-xs font-medium text-slate-400">${res.card.bank}</span>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-indigoInk leading-snug">
+                  ${res.card.name}
+                </h3>
+              </div>
+              <!-- 右側核心實袋數字 -->
+              <div class="text-right">
+                <div class="text-[11px] font-medium text-slate-400 uppercase">實際淨賺</div>
+                <div class="text-xl sm:text-2xl font-bold tabular-nums ${netColorClass}">
+                  ${formatHKD(res.netGain, true)}
+                </div>
+                <div class="text-xs font-semibold tabular-nums ${netColorClass}">
+                  實得 ${res.effectiveRate >= 0 ? '+' : ''}${res.effectiveRate.toFixed(2)}%
+                </div>
+              </div>
+            </div>
+
+            <!-- 細項拆解條 -->
+            <div class="grid grid-cols-2 gap-2 bg-slate-50/90 rounded-xl p-3 text-xs border border-slate-100">
+              <div>
+                <span class="text-slate-400 block mb-0.5">總回贈</span>
+                <span class="font-bold text-indigoInk tabular-nums">${formatHKD(res.grossReward, true)}</span>
+              </div>
+              <div class="border-l border-slate-200/80 pl-3">
+                <span class="text-slate-400 block mb-0.5">外幣手續費 (${(res.card.fxFeeRate * 100).toFixed(2).replace(/\.00$/, '')}%)</span>
+                <span class="font-bold tabular-nums ${res.fxFee > 0 ? 'text-vermilion' : 'text-emeraldGain'}">
+                  ${res.fxFee > 0 ? '-' + formatHKD(res.fxFee) : '$0 (免收)'}
+                </span>
+              </div>
+            </div>
+
+            ${alertBox}
+
+            <!-- 備註與聯盟行銷按鈕 -->
+            <div class="mt-3.5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <p class="text-xs text-slate-400 leading-relaxed">
+                ${res.card.cashback.note}
+              </p>
+              <button
+                type="button"
+                onclick="openAffiliateModal('${res.card.name}', '${res.card.promoDesc}')"
+                class="shrink-0 inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-xl text-xs font-semibold ${isTop ? 'bg-indigoInk text-white hover:bg-slate-800' : 'bg-slate-100 text-indigoInk hover:bg-slate-200/80'} active:scale-95 transition-all cursor-pointer"
+              >
+                查看最新迎新優惠 →
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // 渲染儲里數卡片
+    function renderMilesResults(results, container) {
+      container.innerHTML = results.map((res, idx) => {
+        const isTop = idx === 0;
+        const netColorClass = res.netValueHKD >= 0 ? 'text-emeraldGain' : 'text-vermilion';
+        const borderClass = isTop
+          ? 'border-indigoInk/25 ring-1 ring-indigoInk/10 shadow-md'
+          : 'border-slate-200/80 shadow-xs';
+
+        let alertBox = '';
+        if (res.isOverCap) {
+          alertBox = `
+            <div class="mt-3 flex items-start gap-2 bg-rose-50 border border-rose-200/80 text-vermilion rounded-xl px-3 py-2 text-xs leading-relaxed">
+              <span class="shrink-0 mt-0.5">⚠️</span>
+              <span><strong>已爆推廣上限！</strong>超出 HK$${formatInteger(res.excessSpend)} 的簽賬回落至 HK$${res.baseHKDPerMile}/里，已拉高平均每里成本。</span>
+            </div>
+          `;
+        } else if (res.capHKD === Infinity) {
+          alertBox = `
+            <div class="mt-3 flex items-center gap-2 bg-slate-50 border border-slate-200/80 text-slate-600 rounded-xl px-3 py-2 text-xs font-medium">
+              <span>♾️</span>
+              <span>無簽賬上限，大額消費照樣穩定儲里數</span>
+            </div>
+          `;
+        }
+
+        return `
+          <article class="bg-white rounded-2xl border ${borderClass} p-4 sm:p-5 transition-all">
+            <!-- 頂部：排名與卡名 -->
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-1.5">
+                  ${getRankBadgeHTML(idx)}
+                  <span class="text-xs font-medium text-slate-400">${res.card.bank}</span>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-indigoInk leading-snug">
+                  ${res.card.name}
+                </h3>
+              </div>
+              <!-- 右側核心里數數字 -->
+              <div class="text-right">
+                <div class="text-[11px] font-medium text-slate-400 uppercase">總賺里數</div>
+                <div class="text-xl sm:text-2xl font-bold tabular-nums text-indigoInk">
+                  ${formatInteger(res.milesEarned)} <span class="text-sm font-semibold">里</span>
+                </div>
+                <div class="text-xs font-semibold tabular-nums ${netColorClass}">
+                  淨估值 ${formatHKD(res.netValueHKD, true)}
+                </div>
+              </div>
+            </div>
+
+            <!-- 細項拆解條 -->
+            <div class="grid grid-cols-3 gap-2 bg-slate-50/90 rounded-xl p-3 text-xs border border-slate-100">
+              <div>
+                <span class="text-slate-400 block mb-0.5">外幣手續費</span>
+                <span class="font-bold text-vermilion tabular-nums">-${formatHKD(res.fxFee)}</span>
+              </div>
+              <div class="border-l border-slate-200/80 pl-2.5">
+                <span class="text-slate-400 block mb-0.5">每里成本</span>
+                <span class="font-bold text-indigoInk tabular-nums">$${res.costPerMile.toFixed(3)}/里</span>
+              </div>
+              <div class="border-l border-slate-200/80 pl-2.5">
+                <span class="text-slate-400 block mb-0.5">里數估值</span>
+                <span class="font-bold text-slate-700 tabular-nums">${formatHKD(res.milesValueHKD)}</span>
+              </div>
+            </div>
+
+            ${alertBox}
+
+            <!-- 備註與聯盟行銷按鈕 -->
+            <div class="mt-3.5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <p class="text-xs text-slate-400 leading-relaxed">
+                ${res.card.miles.note}
+              </p>
+              <button
+                type="button"
+                onclick="openAffiliateModal('${res.card.name}', '${res.card.promoDesc}')"
+                class="shrink-0 inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-xl text-xs font-semibold ${isTop ? 'bg-indigoInk text-white hover:bg-slate-800' : 'bg-slate-100 text-indigoInk hover:bg-slate-200/80'} active:scale-95 transition-all cursor-pointer"
+              >
+                查看最新迎新優惠 →
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 6. 使用者互動事件處理 (Interactions)
+    // =========================================================================
+    function setCurrency(newCurrency) {
+      if (state.currency === newCurrency) return;
+      const currentAmt = parseFloat(state.amount) || 0;
+      const rate = parseFloat(state.ratePer100JPY) || 5.0;
+
+      // 切換幣別時自動換算輸入框內的數字，體驗更順滑
+      let converted = 0;
+      if (newCurrency === 'JPY') {
+        converted = rate > 0 ? Math.round((currentAmt / rate) * 100) : 0;
+      } else {
+        converted = Math.round((currentAmt / 100) * rate);
+      }
+
+      state.currency = newCurrency;
+      state.amount = converted;
+
+      const spendInput = document.getElementById('spendInput');
+      spendInput.value = converted > 0 ? converted : '';
+      document.getElementById('currencyPrefix').textContent = newCurrency === 'HKD' ? 'HK$' : '¥';
+
+      // 更新切換按鈕樣式
+      const btnHKD = document.getElementById('btnCurrencyHKD');
+      const btnJPY = document.getElementById('btnCurrencyJPY');
+      if (newCurrency === 'HKD') {
+        btnHKD.className = 'px-3 py-1.5 rounded-lg transition-all cursor-pointer bg-white text-indigoInk shadow-xs';
+        btnJPY.className = 'px-3 py-1.5 rounded-lg transition-all cursor-pointer text-slate-500 hover:text-indigoInk';
+      } else {
+        btnJPY.className = 'px-3 py-1.5 rounded-lg transition-all cursor-pointer bg-white text-indigoInk shadow-xs';
+        btnHKD.className = 'px-3 py-1.5 rounded-lg transition-all cursor-pointer text-slate-500 hover:text-indigoInk';
+      }
+
+      renderAll();
+    }
+
+    function applyPresetHKD(hkdAmount) {
+      const rate = parseFloat(state.ratePer100JPY) || 5.0;
+      const valueToSet = state.currency === 'HKD'
+        ? hkdAmount
+        : Math.round((hkdAmount / rate) * 100);
+
+      state.amount = valueToSet;
+      document.getElementById('spendInput').value = valueToSet;
+      renderAll();
+    }
+
+    function setRewardMode(newMode) {
+      if (state.mode === newMode) return;
+      state.mode = newMode;
+
+      const btnCashback = document.getElementById('btnModeCashback');
+      const btnMiles = document.getElementById('btnModeMiles');
+      const milesNote = document.getElementById('milesValuationNote');
+
+      if (newMode === 'cashback') {
+        btnCashback.className = 'py-2.5 px-3 rounded-lg text-sm font-semibold transition-all cursor-pointer bg-white text-indigoInk shadow-xs';
+        btnMiles.className = 'py-2.5 px-3 rounded-lg text-sm font-semibold transition-all cursor-pointer text-slate-500 hover:text-indigoInk';
+        milesNote.classList.add('hidden');
+      } else {
+        btnMiles.className = 'py-2.5 px-3 rounded-lg text-sm font-semibold transition-all cursor-pointer bg-white text-indigoInk shadow-xs';
+        btnCashback.className = 'py-2.5 px-3 rounded-lg text-sm font-semibold transition-all cursor-pointer text-slate-500 hover:text-indigoInk';
+        milesNote.classList.remove('hidden');
+      }
+
+      renderAll();
+    }
+
+    // =========================================================================
+    // 7. 彈窗與一鍵複製 Threads 討論摘要 (Modal & Clipboard)
+    // =========================================================================
+    function openAffiliateModal(title, desc) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalDesc').textContent = desc;
+      const modal = document.getElementById('affiliateModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAffiliateModal() {
+      const modal = document.getElementById('affiliateModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleModalBackdropClick(e) {
+      if (e.target.id === 'affiliateModal') {
+        closeAffiliateModal();
+      }
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.remove('opacity-0', 'translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2600);
+    }
+
+    // 使用 document.execCommand('copy') 確保在 iFrame 環境下亦能穩定複製
+    function copyThreadsSummary() {
+      const spendHKD = getSpendInHKD();
+      if (spendHKD <= 0 || state.latestResults.length === 0) {
+        showToast('請先輸入消費金額再複製結果！');
+        return;
+      }
+
+      const top = state.latestResults[0];
+      let summaryText = '';
+
+      if (state.mode === 'cashback') {
+        summaryText = `🇯🇵 啱啱用「日本簽賬防伏計算機」計咗下：\n去日本預計洗 HK$${formatInteger(spendHKD)}（揀現金回贈），扣埋 1.95% 外幣手續費後，實袋冠軍係「${top.card.name}」，淨賺 ${formatHKD(top.netGain, true)}（實得 ${top.effectiveRate.toFixed(2)}%）！`;
+        if (state.latestSplitTip) {
+          summaryText += `\n💡 如果肯拆兩張卡碌，仲可以多賺 ${formatHKD(state.latestSplitTip.extraGain, true)}（總實袋 ${formatHKD(state.latestSplitTip.totalSplitNet, true)}）！`;
+        }
+        summaryText += `\n大家去日本通常帶邊張卡防伏？👇 #日本旅行 #香港信用卡`;
+      } else {
+        summaryText = `🇯🇵 啱啱用「日本簽賬防伏計算機」計咗下：\n去日本預計洗 HK$${formatInteger(spendHKD)}（揀儲 Asia Miles），扣埋 1.95% 外幣手續費後，最抵係「${top.card.name}」，總共賺 ${formatInteger(top.milesEarned)} 里（每里成本 $${top.costPerMile.toFixed(3)}）！\n大家儲里數去日本通常碌邊張？👇 #日本旅行 #儲里數`;
+      }
+
+      try {
+        const tempTextarea = document.createElement('textarea');
+        tempTextarea.value = summaryText;
+        tempTextarea.setAttribute('readonly', '');
+        tempTextarea.style.position = 'fixed';
+        tempTextarea.style.left = '-9999px';
+        document.body.appendChild(tempTextarea);
+        tempTextarea.select();
+        tempTextarea.setSelectionRange(0, 99999);
+        const copied = document.execCommand('copy');
+        document.body.removeChild(tempTextarea);
+
+        if (copied) {
+          showToast('已複製結果！快去 Threads 貼上討論吧');
+        } else {
+          showToast('複製失敗，請手動選取文字');
+        }
+      } catch (err) {
+        console.error('複製失敗:', err);
+        showToast('複製失敗，請稍後再試');
+      }
+    }
+
+    // =========================================================================
+    // 8. 初始化與監聽器綁定 (Initialization)
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      const spendInput = document.getElementById('spendInput');
+      const rateInput = document.getElementById('rateInput');
+
+      spendInput.addEventListener('input', (e) => {
+        state.amount = e.target.value;
+        renderAll();
+      });
+
+      rateInput.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (!isNaN(val) && val > 0) {
+          state.ratePer100JPY = val;
+          renderAll();
+        }
+      });
+
+      // ESC 鍵關閉彈窗
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAffiliateModal();
+      });
+
+      // 初次渲染
+      renderAll();
+    });
+  </script>
+</body>
+</html>
